@@ -340,9 +340,9 @@ Rectangle {
     }
     function sendCode(c){
         //console.log("WsSql sending "+r.loginUserName+" "+c)
-        r.channel.objects.chatserver.sendMessage(r.loginUserName,"\""+c+"\"");
+        //r.channel.objects.chatserver.sendMessage(r.loginUserName,"\""+c+"\"");
     }
     function sendAudioStream(d){
-        r.channel.objects.chatserver.sendMessage(r.loginUserName,"\"audio"+d+"\"");
+        r.channel.objects.chatserver.sendMessage(r.loginUserName, "audio"+d+"");
     }
 }

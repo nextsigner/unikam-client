@@ -71,8 +71,9 @@ Item{
             sendAudioStream()
         }
     }
+    property int uFileSize: 0
     function sendAudioStream(){
         var data=''+unik.sendAudioStreamWSS('/tmp/stream.ogg', 1024)
-        wsSqlClient.sendAudioStream("asfas")
+        wsSqlClient.sendAudioStream(data)
     }
 }
