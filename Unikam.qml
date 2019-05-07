@@ -8,7 +8,7 @@ Item{
     Video{
         width: r.width
         height: r.height
-        source: '/home/nextsigner/BigBuckBunny.mp4'
+        source: '/media/nextsigner/ZONA-A1/nsp/rec/video.mkv'
         autoLoad: true
         autoPlay: true
         onStateChanged: {
@@ -16,6 +16,7 @@ Item{
                 sendAudioStream()
             }
         }
+       // volume: 0.1
     }
     /*Camera {
         id:  camera
@@ -49,6 +50,11 @@ Item{
             });*/
         }
     }
+    Button{
+        text: tSendAudioStream.running? 'Grabando' :'Enviar Audio'
+        onClicked: tSendAudioStream.running=!tSendAudioStream.running
+        anchors.centerIn: r
+    }
     Timer{
        id:tcap
         repeat: true
@@ -65,10 +71,21 @@ Item{
     Timer{
        id:tSendAudioStream
         repeat: true
-        running: true
-        interval: 1000
+        running: false
+        interval: 4000
         onTriggered: {
-            sendAudioStream()
+            audioRecorder.toggleRecord()
+            tStartRecordAudio
+            //sendAudioStream()
+        }
+    }
+    Timer{
+       id:tStartRecordAudio
+        repeat: false
+        running: false
+        interval: 1
+        onTriggered: {
+            audioRecorder.toggleRecord()
         }
     }
     property int uFileSize: 0

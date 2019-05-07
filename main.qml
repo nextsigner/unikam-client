@@ -95,7 +95,7 @@ ApplicationWindow {
     }
     Component.onCompleted: {
 
-        audioRecorder.toggleRecord()
+        //audioRecorder.toggleRecord()
 
         var ukldata='-folder='+appsDir+'/'+app.moduleName
         var ukl=appsDir+'/link_'+app.moduleName+'.ukl'
