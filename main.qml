@@ -9,10 +9,9 @@ ApplicationWindow {
     width: parseInt(Screen.width/2)
     height: Screen.desktopAvailableHeight
     x:parseInt(Screen.width/2)
-    //y:altoBarra
-    title: qsTr("Unikam Example by nextsigner")
+    title: app.moduleName+" by nextsigner"
     color: 'black'
-    property string moduleName: 'unikamclient'
+    property string moduleName: 'unikam-client'
     property int altoBarra: 0
 
     property int fs: appSettings.fs
@@ -22,10 +21,9 @@ ApplicationWindow {
     property color c3: "black"
     property color c4: "white"
 
-
     Settings{
         id: appSettings
-        category: 'conf-unikamclient'
+        category: 'conf-'+app.moduleName
         property int cantRun
         property bool fullScreen
         property bool logViewVisible
@@ -36,7 +34,6 @@ ApplicationWindow {
     Unikam{
         id:unikam
         anchors.fill: parent
-        //visible:!wsSqlClient.visible
     }
     WsSqlClient{
         id:wsSqlClient
@@ -69,7 +66,9 @@ ApplicationWindow {
         topHandlerHeight: Qt.platform.os!=='android'?app.fs*0.25:app.fs*0.75
         showUnikControls: true
         anchors.bottom: parent.bottom
+        visible: appSettings.logViewVisible
     }
+    Xm{id: xM; area: unikam.mode;onAreaChanged: unikam.mode=area;}
     UnikBusy{id:ub;running: false}
     Shortcut {
         sequence: "Shift+Left"
@@ -94,9 +93,6 @@ ApplicationWindow {
         }
     }
     Component.onCompleted: {
-
-        //audioRecorder.toggleRecord()
-
         var ukldata='-folder='+appsDir+'/'+app.moduleName
         var ukl=appsDir+'/link_'+app.moduleName+'.ukl'
         unik.setFile(ukl, ukldata)
