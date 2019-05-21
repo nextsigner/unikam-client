@@ -34,7 +34,6 @@ ApplicationWindow {
     FontLoader {name: "FontAwesome";source: "qrc:/fontawesome-webfont.ttf";}
     Item{
         id:xApp
-        color: app.c3
         width: app.width
         height: app.height
         anchors.centerIn: parent
