@@ -35,7 +35,7 @@ ApplicationWindow {
         id:unikam
         anchors.fill: parent
     }
-    WsSqlClient{
+    WsClient{
         id:wsSqlClient
         onLoguinSucess: {
             focus=false

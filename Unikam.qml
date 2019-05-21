@@ -1,8 +1,7 @@
 import QtQuick 2.5
 import QtQuick.Controls 2.0
-import Qt.labs.settings 1.0
 import QtMultimedia 5.5
-import Qt.labs.folderlistmodel 2.1
+
 Item{
     id:r
     anchors.fill: parent
@@ -11,8 +10,18 @@ Item{
         id:ac
         anchors.centerIn: r
         width: r.width
-        height: r.height/2
+        height: r.height
+        Camera {
+            id:  camera
+            //imageProcessing.whiteBalanceMode: whiteBalanceMode: CameraImageProcessing.WhiteBalanceFlash
+            exposure {
+                //exposureCompensation: - -1.0
+                //exposureMode:  Camera.ExposurePortrait
+            }
+            //flash.mode: mode: Camera.FlashRedEyeReduction
+        }
         VideoOutput {
+            enabled: r.mode===0
             visible:r.mode===0
             id:videoOutput
             source:  camera
@@ -49,30 +58,18 @@ Item{
             volume: 0
         }
     }
-    Camera {
-        id:  camera
-
-        //imageProcessing.whiteBalanceMode: whiteBalanceMode: CameraImageProcessing.WhiteBalanceFlash
-
-        exposure {
-            exposureCompensation: - -1.0
-            //exposureMode:  Camera.ExposurePortrait
-        }
-        //flash.mode: mode: Camera.FlashRedEyeReduction
-
-    }
 
     Button{
         text: 'Enviar'
         onClicked: {
-            text=timer.running? 'Enviando' :'Enviar'
             timer.running=!timer.running
+            text=timer.running? 'Enviando' :'Enviar'
         }
         property var timer: tcap
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: ac.bottom
-        anchors.topMargin: 10
-        //anchors.centerIn: r
+        anchors.top: r.top
+        anchors.topMargin: app.fs*0.1
+        anchors.right: r.right
+        anchors.rightMargin: app.fs*0.1
     }
     Timer{
         id:tcap
@@ -112,7 +109,6 @@ Item{
             v++
             if(v===0){
                 //sendAudioStream()
-
             }
         }
     }

@@ -2,37 +2,43 @@ import QtQuick 2.9
 import QtQuick.Controls 2.0
 import QtQuick.Dialogs 1.2
 import Qt.WebSockets 1.0
+import Qt.labs.settings 1.0
 import "qwebchannel.js" as WebChannel
 
 Rectangle {
     id: r
     anchors.fill: parent
-   color:app?app.c3:'gray'
+    color:app?app.c3:'gray'
+    property string wsModuleName: 'wscli'
     property int fs: app && app.fs ? app.fs:r.width*0.03
     property var channel
     property var listView
 
-   //Default
-   property url url: "ws://127.0.0.1:12345"
+    //Default
+    property url url: "ws://127.0.0.1:12345"
 
-   //Envia a Android Samsung J7
-   //property url url: "ws://192.168.1.64:5500"
-
-
-   //Envia a Linux
-   //property url url: "ws://192.168.1.61:12345"
+    //Envia a Android Samsung J7
+    //property url url: "ws://192.168.1.64:5500"
 
 
-   property var arrayUserList: []
-    property string sqliteFileName: 'wssqlclient.sqlite'
+    //Envia a Linux
+    //property url url: "ws://192.168.1.61:12345"
+
+
+    property var arrayUserList: []
     property string loginUserName
     signal loguinSucess()
-   signal errorSucess()
-   signal keepAliveSuccess()
-    onUrlChanged: {
-        socket.url=url
-        xWsUrl.visible=false
-        xUserName.visible=false
+    signal errorSucess()
+    signal keepAliveSuccess()
+    Settings{
+        id: wscliSettings
+        category: 'conf-'+r.wsModuleName+app.moduleName
+        property string uUrl
+        onUUrlChanged: {
+            socket.url=uUrl
+            xWsUrl.visible=false
+            xUserName.visible=false
+        }
     }
     WebSocket {
         id: socket
@@ -66,9 +72,6 @@ Rectangle {
                         var d = new Date(Date.now())
                         var ul = r.arrayUserList
                         for(var i=0; i < ul.length; i++){
-                            //console.log('Unik WsSql: Addign User: '+ul[i])
-                            //var sql = 'INSERT INTO users(user, ws, ms)VALUES(\''+ul[i]+'\', \''+r.url+'\',  '+d.getTime()+')'
-                            //unik.sqlQuery(sql)
                             if(''+ul[i]===tiUserName.text){
                                 //xUserName.visible=false
                             }
@@ -78,16 +81,13 @@ Rectangle {
                     ch.objects.chatserver.newMessage.connect(function(time, user, message) {
                         var d = new Date(Date.now())
                         //console.log('Unik WsSql: Addign QmlCode: '+message)
-                        //var sql = 'INSERT INTO users(user, ws, ms)VALUES(\''+message+'\', \''+user+'\', \''+r.url+'\',  '+d.getTime()+')'
-                        //unik.sqlQuery(sql)
                     });
-
                     //connect to the keep alive signal
                     ch.objects.chatserver.keepAlive.connect(function(args) {
                         if (r.loginUserName !== '')
                             //and call the keep alive response method as an answer
                             ch.objects.chatserver.keepAliveResponse(r.loginUserName);
-                            keepAliveSuccess()
+                        keepAliveSuccess()
                     });
                 });
                 xUserName.visible=true;
@@ -105,12 +105,12 @@ Rectangle {
             }
         }
         function updateUserList(){
-            console.log('Unik WsSql: Updating User List...')
+            console.log('Unik WsClient: Updating User List...')
             clear()
             var ul = arrayUserList;
             for(var i=0; i < ul.length; i++){
                 append(createElement(ul[i]))
-                console.log('Unik WsSql: Addign User: '+ul[i])
+                console.log('Unik WsClient: Addign User: '+ul[i])
             }
         }
     }
@@ -132,7 +132,7 @@ Rectangle {
         height:r.fs*1.6
         color:app.c3
         visible:false
-        anchors.centerIn: parent
+        //anchors.centerIn: parent
         onVisibleChanged: {
             if(visible){
                 tiUserName.focus=true
@@ -218,7 +218,7 @@ Rectangle {
         onVisibleChanged: {
             if(visible){
                 //socket.close()
-                tiWebSocketUrl.text=r.url
+                tiWebSocketUrl.text=wscliSettings.uUrl
                 tiWebSocketUrl.focus=true
             }
         }
@@ -269,7 +269,7 @@ Rectangle {
                 anchors.right: parent.right
                 onClicked: {
                     xWsUrl.visible=false
-                    r.url=tiWebSocketUrl.text
+                    wscliSettings.uUrl=tiWebSocketUrl.text
                 }
             }
         }
@@ -302,15 +302,15 @@ Rectangle {
             anchors.top: parent.top
             anchors.topMargin: r.fs*0.5
         }
-            Text {
-                id: msg
-                text: 'Error!'
-                font.pixelSize: r.fs
-                color:app.c2
-                width: errorDialog.width-r.fs
-                wrapMode: Text.WordWrap
-                anchors.centerIn: parent
-            }
+        Text {
+            id: msg
+            text: 'Error!'
+            font.pixelSize: r.fs
+            color:app.c2
+            width: errorDialog.width-r.fs
+            wrapMode: Text.WordWrap
+            anchors.centerIn: parent
+        }
         Button{
             text:'Aceptar'
             font.pixelSize: r.fs
@@ -321,39 +321,23 @@ Rectangle {
             onClicked: {
                 errorDialog.visible=false
                 xUserName.visible=false
-                tiWebSocketUrl.text=r.url
+                tiWebSocketUrl.text=wscliSettings.uUrl
                 r.url=''
                 xWsUrl.visible=true
             }
         }
-
+    }
+    Component.onCompleted: {
+        if(wscliSettings.uUrl===''){
+            wscliSettings.uUrl=r.url
+        }
     }
 
-    Component.onCompleted:{
-        /*unik.sqliteInit(sqliteFileName)
-        var sql=''
-        sql= 'CREATE TABLE IF NOT EXISTS users(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user TEXT,
-            ws TEXT,
-            ms NUMERIC
-            )'
-        unik.sqlQuery(sql)
-
-        sql= 'CREATE TABLE IF NOT EXISTS qmlcodes(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            code TEXT,
-            user TEXT,
-            ws TEXT,
-            ms NUMERIC
-            )'
-        unik.sqlQuery(sql)*/
-    }
     function sendCode(c){
         //console.log("WsSql sending "+r.loginUserName+" "+c)
 
         //Funciona sin comprimir
-       r.channel.objects.chatserver.sendMessage(r.loginUserName,"\""+c+"\"");
+        r.channel.objects.chatserver.sendMessage(r.loginUserName,"\""+c+"\"");
 
         //Probando compresion
         //r.channel.objects.chatserver.sendMessage(r.loginUserName,c);
