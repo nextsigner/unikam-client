@@ -24,16 +24,17 @@ Rectangle {
     //Envia a Linux
     //property url url: "ws://192.168.1.61:12345"
 
-
     property var arrayUserList: []
     property string loginUserName
     signal loguinSucess()
     signal errorSucess()
     signal keepAliveSuccess()
+
     Settings{
         id: wscliSettings
         category: 'conf-'+r.wsModuleName+app.moduleName
         property string uUrl
+        property bool autoLogin
         onUUrlChanged: {
             socket.url=uUrl
             xWsUrl.visible=false
@@ -133,13 +134,26 @@ Rectangle {
         color:app.c3
         visible:false
         //anchors.centerIn: parent
+        anchors.horizontalCenter: parent.horizontalCenter
         onVisibleChanged: {
             if(visible){
                 tiUserName.focus=true
+                if(wscliSettings.autoLogin){
+                    tAutoLogin.start()
+                }
             }
+        }
+        Timer{
+            id: tAutoLogin
+            running: false
+            repeat: true
+            interval: 3000
+            onTriggered: xUserName.loguin()
         }
         Column{
             spacing: r.fs*0.5
+            anchors.top: parent.top
+            anchors.topMargin: app.fs*0.5
             Row{
                 id:rowUN
                 spacing: r.fs*0.5
@@ -181,13 +195,21 @@ Rectangle {
                     }
                 }
             }
+            Row{
+                CheckBox{
+                    text: 'AutoLogin'
+                    checked: wscliSettings.autoLogin
+                    onCheckedChanged: {
+                        wscliSettings.autoLogin=checked
+                    }
+                }
             Button{
                 text: 'Conectar'
                 font.pixelSize: r.fs
-                anchors.right: parent.right
                 onClicked: {
                     xUserName.loguin()
                 }
+            }
             }
         }
         function loguin(){
@@ -331,6 +353,11 @@ Rectangle {
         if(wscliSettings.uUrl===''){
             wscliSettings.uUrl=r.url
         }
+        if(wscliSettings.autoLogin===undefined){
+            wscliSettings.autoLogin=true
+        }
+        var d = new Date(Date.now())
+        tiUserName.text=Qt.platform.os+'-'+d.getTime()
     }
 
     function sendCode(c){
