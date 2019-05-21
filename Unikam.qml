@@ -56,32 +56,16 @@ Item{
 
         exposure {
             exposureCompensation: - -1.0
-            exposureMode:  Camera.ExposurePortrait
+            //exposureMode:  Camera.ExposurePortrait
         }
         //flash.mode: mode: Camera.FlashRedEyeReduction
 
     }
 
-
-    /*Image{
-      anchors.fill: r
-      anchors.centerIn: r
-      source: '/home/nextsigner/Descargas/gatita.jpg'
-    }*/
-    MouseArea{
-        anchors.fill: r
-        onClicked: {
-            //tcap.running=!tcap.running
-            /*r.grabToImage(function(result) {
-                wsSqlClient.sendCode(unik.itemToImageData(result))
-            });*/
-        }
-    }
     Button{
         text: 'Enviar'
-        //onClicked: tSendAudioStream.running=!tSendAudioStream.running
         onClicked: {
-            text=text==='Enviar'? 'Enviando' :'Enviar'
+            text=timer.running? 'Enviando' :'Enviar'
             timer.running=!timer.running
         }
         property var timer: tcap
@@ -98,18 +82,21 @@ Item{
         //interval: 1000
         property int v: 0
         onTriggered: {
-            //stop()
+            stop()
             if(r.mode===0){
-                wsSqlClient.sendCode(unik.screenImageData(0))
-            }else{
                 ac.grabToImage(function(result) {
-
-                    //console.log("-->"+unik.itemToImageData(result))
-                    screen.source="image://unik/"+v
-                    v++
                     wsSqlClient.sendCode(unik.itemToImageData(result))
                     start()
                 });
+            }else if(r.mode===1){
+                ac.grabToImage(function(result) {
+                    //console.log("-->"+unik.itemToImageData(result))
+                    screen.source="image://unik/"+v
+                    v++
+                    start()
+                });
+            }else{
+                wsSqlClient.sendCode(unik.screenImageData(0))
             }
         }
     }
