@@ -1,6 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Controls 2.0
-import QtMultimedia 5.5
+import QtMultimedia 5.9
 
 Item{
     id:r
@@ -13,6 +13,19 @@ Item{
         height: r.height
         Camera {
             id:  camera
+            imageCapture {
+                onImageCaptured: {
+                    // Show the preview in an Image
+                    //photoPreview.source = preview
+                    //wsSqlClient.sendCode(unik.imageCameraCapturaToByteArray(preview))
+                    //console.log('1--::>'+preview)
+                    //console.log('2--::>'+requestId)
+                    //console.log('3--::>'+capturedImagePath)
+
+                    //console.log('--::>'+unik.imageCameraCapturaToByteArray(preview))
+                    //camera.
+                }
+            }
             //imageProcessing.whiteBalanceMode: whiteBalanceMode: CameraImageProcessing.WhiteBalanceFlash
             exposure {
                 //exposureCompensation: - -1.0
@@ -62,6 +75,7 @@ Item{
     Button{
         text: 'Enviar'
         onClicked: {
+            //camera.imageCapture.capture();
             timer.running=!timer.running
             text=timer.running? 'Enviando' :'Enviar'
         }

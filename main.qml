@@ -3,6 +3,7 @@ import QtQuick.Controls 2.0
 import QtQuick.Controls.Styles 1.2
 import QtQuick.Window 2.0
 import Qt.labs.settings 1.0
+
 ApplicationWindow {
     id: app
     visible: true
@@ -31,7 +32,9 @@ ApplicationWindow {
         property int fs
         property int lvh
     }
+
     FontLoader {name: "FontAwesome";source: "qrc:/fontawesome-webfont.ttf";}
+
     Item{
         id:xApp
         width: app.width
@@ -46,16 +49,11 @@ ApplicationWindow {
             onLoguinSucess: {
                 focus=false
                 visible=false
-                //unikTextEditor.visible=true
-                //unikTextEditor.textEditor.focus=true
-                //unikTextEditor.textEditor.setPos()
             }
             onErrorSucess: {
                 console.log('WebSockets Error success...')
                 focus=true
                 visible=true
-                //unikTextEditor.visible=false
-                //unikTextEditor.textEditor.focus=false
             }
             onVisibleChanged: {
                 if(!visible){
