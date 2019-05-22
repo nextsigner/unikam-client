@@ -45,7 +45,7 @@ ApplicationWindow {
             anchors.fill: parent
         }
         WsClient{
-            id:wsSqlClient
+            id:wsClient
             onLoguinSucess: {
                 focus=false
                 visible=false

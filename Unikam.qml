@@ -85,6 +85,13 @@ Item{
         anchors.right: r.right
         anchors.rightMargin: app.fs*0.1
     }
+    Text {
+        id: info
+        text: wsClient.conected?'Connected: '+wsClient.uUrl+' Mode: '+r.mode:'Disonnected: '+wsClient.uUrl
+        font.pixelSize: 10
+        color: 'white'
+        anchors.horizontalCenter: parent
+    }
     Timer{
         id:tcap
         repeat: true
@@ -96,7 +103,7 @@ Item{
             //stop()
             if(r.mode===0){
                 ac.grabToImage(function(result) {
-                    wsSqlClient.sendCode(unik.itemToImageData(result))
+                    wsClient.sendCode(unik.itemToImageData(result))
                     start()
                 });
             }else if(r.mode===1){

@@ -13,9 +13,11 @@ Rectangle {
     property int fs: app && app.fs ? app.fs:r.width*0.03
     property var channel
     property var listView
+    property bool conected: false
 
     //Default
     property url url: "ws://127.0.0.1:12345"
+    property url uUrl: wscliSettings.uUrl
 
     //Envia a Android Samsung J7
     //property url url: "ws://192.168.1.64:5500"
@@ -60,10 +62,12 @@ Rectangle {
                 errorDialog.visible = true;
                 break;
             case WebSocket.Closed:
+                r.conected=false
                 errorDialog.text = "Error: Socket at " + url + " closed.";
                 errorDialog.visible = true;
                 break;
             case WebSocket.Open:
+                r.conected=true
                 //open the webchannel with the socket as transport
                 new WebChannel.QWebChannel(socket, function(ch) {
                     r.channel = ch;
@@ -372,5 +376,12 @@ Rectangle {
     function sendAudioStream(d){
         //r.channel.objects.chatserver.sendMessage(r.loginUserName, "audio"+d+"");
         r.channel.objects.chatserver.sendMessage(r.loginUserName, d);
+    }
+    function swichConnect(){
+        if(r.conected){
+            socket.active=false
+        }else{
+            socket.active=true
+        }
     }
 }
