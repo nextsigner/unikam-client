@@ -90,7 +90,7 @@ Item{
         text: wsClient.conected?'Connected: '+wsClient.uUrl+' Mode: '+r.mode:'Disonnected: '+wsClient.uUrl
         font.pixelSize: 10
         color: 'white'
-        anchors.horizontalCenter: parent
+        anchors.horizontalCenter: r
     }
     Timer{
         id:tcap
@@ -114,7 +114,7 @@ Item{
                     start()
                 });
             }else{
-                wsSqlClient.sendCode(unik.screenImageData(0))
+                wsClient.sendCode(unik.screenImageData(0))
             }
         }
     }
