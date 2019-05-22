@@ -93,7 +93,7 @@ Item{
         //interval: 1000
         property int v: 0
         onTriggered: {
-            stop()
+            //stop()
             if(r.mode===0){
                 ac.grabToImage(function(result) {
                     wsSqlClient.sendCode(unik.itemToImageData(result))
@@ -127,12 +127,12 @@ Item{
         }
     }
     property int uFileSize: 0
-    Connections{
+    /*Connections{
         target: audioRecorder
         onRecorded:{
             //sender.fileName=audioFile
         }
-    }
+    }*/
     Timer{
         id: sender
         running: fileName!==''
