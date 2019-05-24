@@ -11,7 +11,7 @@ Item{
         id:ac
         anchors.centerIn: r
         width: r.width
-        height: r.height/2
+        height: r.height
         VideoOutput {
             visible:r.mode===0
             id:videoOutput
@@ -100,18 +100,16 @@ Item{
         property int v: 0
         onTriggered: {
             //stop()
-            if(r.mode===0){
-                //wsSqlClient.sendCode(unik.screenImageData(0))
-                wsSqlClient.sendCode(unik.itemToImageData(result))
-            }else{
+            if(r.mode===0){                
                 ac.grabToImage(function(result) {
-
                     //console.log("-->"+unik.itemToImageData(result))
-                    screen.source="image://unik/"+v
+                    wsSqlClient.sendCode(unik.itemToImageData(result))
+                    //screen.source="image://unik/"+v
                     v++
-
                     start()
                 });
+            }else{
+                wsSqlClient.sendCode(unik.screenImageData(0))
             }
         }
     }
