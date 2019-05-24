@@ -22,6 +22,12 @@ ApplicationWindow {
     property color c3: "black"
     property color c4: "white"
 
+    onClosing: {
+        if(Qt.platform.os==='android'){
+            close.accepted = false;
+        }
+    }
+
     Settings{
         id: appSettings
         category: 'conf-'+app.moduleName
