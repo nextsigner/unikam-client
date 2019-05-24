@@ -7,9 +7,9 @@ import Qt.labs.settings 1.0
 ApplicationWindow {
     id: app
     visible: true
-    width: parseInt(Screen.width/2)
-    height: Screen.desktopAvailableHeight
-    x:parseInt(Screen.width/2)
+    width: Qt.platform.os!=='android'?parseInt(Screen.width/2):Screen.width
+    height: Qt.platform.os!=='android'?Screen.desktopAvailableHeight:Screen.height
+    x:Qt.platform.os!=='android'?parseInt(Screen.width/2):0
     title: app.moduleName+" by nextsigner"
     color: 'black'
     property string moduleName: 'unikam-client'
