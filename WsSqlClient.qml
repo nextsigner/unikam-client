@@ -341,6 +341,7 @@ Rectangle {
             if(visible){
                 errorSucess()
             }
+            botConn.enabled=true
         }
         Text {
             text: '<b>WebSocket Error</b>'
