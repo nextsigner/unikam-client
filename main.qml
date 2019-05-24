@@ -10,6 +10,7 @@ ApplicationWindow {
     width: Qt.platform.os!=='android'?parseInt(Screen.width/2):Screen.width
     height: Qt.platform.os!=='android'?Screen.desktopAvailableHeight:Screen.height
     x:Qt.platform.os!=='android'?parseInt(Screen.width/2):0
+    visibility:Qt.platform.os!=='android'?'Windowed':'FullScreen'
     title: app.moduleName+" by nextsigner"
     color: 'black'
     property string moduleName: 'unikam-client'
