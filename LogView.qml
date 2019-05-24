@@ -206,7 +206,14 @@ Rectangle{
                 tp:1
                 visible: !raiz.enUnikTools
                 onClicking: {
-                    unik.ejecutarLineaDeComandoAparte(appExec+' -folder='+appsDir+'/unik-tools  -cfg')
+                    if(Qt.platform.os!=='android'){
+                        unik.ejecutarLineaDeComandoAparte(appExec+' -folder='+appsDir+'/unik-tools')
+                    }else{
+                        var params=''
+                        params+='-folder='+pws+'/unik-android-apps'
+                        unik.setUnikStartSettings(params)
+                        unik.restartApp()
+                    }
                 }
             }
             Boton{
@@ -321,7 +328,9 @@ Rectangle{
         logTxt.text=''
     }
     function showInfo(){
-        var data=''+unik.getFile(appsDir+'/'+app.moduleName+'/README.md')
+        var readmeLoc=unik.getPath(5)+'/README.md'
+        console.log('Reading info from '+readmeLoc)
+        var data=''+unik.getFile(readmeLoc)
         var m0=data.split('\n')
         var nd=''
         for(var i=0;i<m0.length;i++){

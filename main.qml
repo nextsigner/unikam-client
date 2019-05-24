@@ -35,6 +35,7 @@ ApplicationWindow {
     Unikam{
         id:unikam
         anchors.fill: parent
+        wsActive: wsSqlClient.active
     }
     WsSqlClient{
         id:wsSqlClient
@@ -59,13 +60,6 @@ ApplicationWindow {
             }
         }
     }
-//    UnikamWssConn{
-//        id: uWsConn;
-//        url:wsSqlClient.url
-//        onConnecting: {
-//            wsSqlClient.url=url
-//        }
-//    }
     LogView{
         width: parent.width
         height: appSettings.lvh

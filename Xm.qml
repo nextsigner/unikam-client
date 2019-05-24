@@ -99,6 +99,23 @@ Item{
                 w:r.botSize
                 h:w
                 tp:0
+                d:'Conectar'
+                c:app.c3
+                b:app.c2
+                t:'\uf0c1'
+                opacity: wsClient.conected?1.0:0.65
+               // visible:app.mod===0&&app.s===1?false:true
+                onClicking: {
+                    r.pressed()
+                    trb2.restart()
+                    wsSqlClient.closingConnection=true
+                    wsSqlClient.socket.url=''
+                }
+            }
+            Boton{
+                w:r.botSize
+                h:w
+                tp:0
                 d:'Camara'
                 c:app.c3
                 b:app.c2
@@ -110,22 +127,7 @@ Item{
                     trb2.restart()
                     r.area=0
                 }
-            }
-            Boton{
-                w:r.botSize
-                h:w
-                tp:0
-                d:'Video'
-                c:app.c3
-                b:app.c2
-                t:'\uf03d'
-                opacity: r.area===1?1.0:0.65
-                onClicking: {
-                    r.pressed()
-                    trb2.restart()
-                    r.area=1
-                }
-            }
+            }            
             Boton{
                 w:r.botSize
                 h:w
@@ -136,6 +138,21 @@ Item{
                 t:'\uf108'
                 visible: Qt.platform.os!=='android'
                 opacity: r.area===2?1.0:0.65
+                onClicking: {
+                    r.pressed()
+                    trb2.restart()
+                    r.area=1
+                }
+            }
+            Boton{
+                w:r.botSize
+                h:w
+                tp:0
+                d:'Video'
+                c:app.c3
+                b:app.c2
+                t:'\uf03d'
+                opacity: r.area===1?1.0:0.65
                 onClicking: {
                     r.pressed()
                     trb2.restart()
@@ -190,7 +207,7 @@ Item{
                 onClicking: {
                     r.pressed()
                     unik.clearComponentCache()
-                    var f=app.qlandPath+'/'+xP.am[app.mod]+'/'+xP.ars[app.s]
+                    var f=app.qlandPath+'/'+app.moduleName
                     var fms=''+f+'/fms'
                     var afms=(''+unik.getFile(fms)).replace(/\n/g, '')
                     var nfms=parseInt(afms)+(1000*60*60*24)
@@ -208,7 +225,6 @@ Item{
                     console.log(cl)
                     unik.setFile(fms2, ''+nfms)
                     unik.setFile(commit2, 'clean')
-                    prepMod()
                 }
             }
             Boton{

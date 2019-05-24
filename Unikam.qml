@@ -1,20 +1,38 @@
 import QtQuick 2.5
 import QtQuick.Controls 2.0
 import Qt.labs.settings 1.0
+import Qt.labs.platform 1.0
 import QtMultimedia 5.5
 import Qt.labs.folderlistmodel 2.1
 Item{
     id:r
     anchors.fill: parent
     property int mode: 0
+    property bool wsActive
+    onWsActiveChanged: {
+        if(!wsActive){
+            tcap.stop()
+        }
+
+    }
     Item{
         id:ac
         anchors.centerIn: r
         width: r.width
         height: r.height
-        VideoOutput {
+        Button{
+            text: 'Reload Camera'
             visible:r.mode===0
+            onClicked: {
+                camera.start()
+                videoOutput.source=camera
+                videoOutput.update()
+            }
+            anchors.centerIn: videoOutput
+        }
+        VideoOutput {
             id:videoOutput
+            visible:r.mode===0
             source:  camera
             anchors.fill:  parent
             //focus : visible // to receive focus and capture key events when visible
@@ -37,6 +55,15 @@ Item{
                     screen.fillMode=Image.PreserveAspectFit
                 }
             }
+        }
+
+        Button{
+            visible: video.visible
+            text: 'Load Video'
+            onClicked: {
+                fileDialogOpen.visible=true
+            }
+            anchors.centerIn: video
         }
         Video{
             id:video
@@ -61,19 +88,25 @@ Item{
         //flash.mode: mode: Camera.FlashRedEyeReduction
 
     }
-    Button{
-        text: 'Enviar'
-        //onClicked: tSendAudioStream.running=!tSendAudioStream.running
-        onClicked: {
-            text=text==='Enviar'? 'Enviando' :'Enviar'
-            timer.running=!timer.running
-        }
-        property var timer: tcap
-        anchors.horizontalCenter: parent.horizontalCenter
+    Boton{
+        w:app.fs
+        h:w
+        tp:3
+        d:'ScreenCast'
+        c:app.c3
+        b:app.c2
+        t:'\uf1eb'
+        visible: Qt.platform.os!=='android'
+        opacity: tcap.running?1.0:0.65
         anchors.top: r.top
         anchors.topMargin: app.fs*0.1
         anchors.right: r.right
         anchors.rightMargin: app.fs*0.1
+        onClicking: {
+           d=d==='Enviar'? 'Enviando' :'Enviar'
+            timer.running=!timer.running
+        }
+        property var timer: tcap
     }
     Timer{
         id:tcap
@@ -84,76 +117,27 @@ Item{
         property int v: 0
         onTriggered: {
             //stop()
-            if(r.mode===0){                
+            if(r.mode===0){
                 ac.grabToImage(function(result) {
                     //console.log("-->"+unik.itemToImageData(result))
                     wsSqlClient.sendCode(unik.itemToImageData(result))
-                    //screen.source="image://unik/"+v
-                    v++
                     start()
                 });
             }else{
+                screen.source="image://unik/"+v
+                v++
                 wsSqlClient.sendCode(unik.screenImageData(0))
             }
         }
     }
-    Timer{
-        id:tSendAudioStream
-        repeat: true
-        running: false
-        interval: 1000
-        property int v: 0
-        onTriggered: {
-            audioRecorder.toggleRecord()
-            sendAudioStream(v)
-            v++
-            if(v===0){
-                //sendAudioStream()
-
-            }
+    FileDialog {
+        id: fileDialogOpen
+        folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
+        nameFilters: ["*.mp4", "*.mov", "*.avi", "*.mpeg", "*.flv", "*.webm", "*.mkv"]
+        onAccepted: {
+            var fs=''+fileDialogOpen.files[0]
+            var fs2=fs.replace('file://', '')
+            video.source=fs2
         }
-    }
-    property int uFileSize: 0
-    Connections{
-        target: audioRecorder
-        onRecorded:{
-            //sender.fileName=audioFile
-        }
-    }
-    Timer{
-        id: sender
-        running: fileName!==''
-        repeat: true
-        interval: 1000
-        property string fileName: ''
-        onTriggered: {
-            if(unik.fileExist(fileName)){
-
-            }
-        }
-    }
-    /*FolderListModel{
-        id: fl
-        folder: "file:///tmp/"
-        showDirs: false
-        showHidden: false
-        showOnlyReadable: true
-        nameFilters: "*.ogg"
-        sortField: FolderListModel.Time
-        onCountChanged: {
-            var f="/tmp/"+fl.get(fl.count-1, "fileName")
-            if(f.indexOf('--')>0){
-                return
-            }
-            unik.log('Sending: '+f)
-            var data=''+unik.sendAudioStreamWSS(f, 1024)
-            unik.debugLog=true
-            //unik.log('Sending: '+data)
-            wsSqlClient.sendAudioStream(data)
-            //unik.log()
-        }
-    }*/
-    function sendAudioStream(v){
-
     }
 }

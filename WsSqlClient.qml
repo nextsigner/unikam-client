@@ -12,6 +12,9 @@ Rectangle {
     property int fs: app && app.fs ? app.fs:r.width*0.03
     property var channel
     property var listView
+    property bool active: socket.active
+    property alias socket: socket
+    property bool closingConnection: false
 
     //Default
     property url url: Qt.platform.os!=='android'?"ws://127.0.0.1:12345":"ws://127.0.0.1:5500"
@@ -54,13 +57,29 @@ Rectangle {
         onStatusChanged: {
             switch (socket.status) {
             case WebSocket.Error:
-                errorSucess()
-                errorDialog.text = "Error: " + socket.errorString;
-                errorDialog.visible = true;
+                if(!r.closingConnection){
+                    errorSucess()
+                    errorDialog.text = "Error: " + socket.errorString;
+                    errorDialog.visible = true;
+                }else{
+                    errorDialog.visible=false
+                    tiWebSocketUrl.text=wsSettings.url
+                    xWsUrl.visible=true
+                    r.visible=true
+                }
+                //r.closingConnection=false;
                 break;
             case WebSocket.Closed:
-                errorDialog.text = "Error: Socket at " + url + " closed.";
-                errorDialog.visible = true;
+                if(!r.closingConnection){
+                    errorDialog.text = "Error: Socket at " + url + " closed.";
+                    errorDialog.visible = true;
+                }else{
+                    errorDialog.visible=false
+                    tiWebSocketUrl.text=wsSettings.url
+                    xWsUrl.visible=true
+                    r.visible=true
+                }
+                //r.closingConnection=false;
                 break;
             case WebSocket.Open:
                 //open the webchannel with the socket as transport
@@ -73,9 +92,6 @@ Rectangle {
                         var d = new Date(Date.now())
                         var ul = r.arrayUserList
                         for(var i=0; i < ul.length; i++){
-                            //console.log('Unik WsSql: Addign User: '+ul[i])
-                            //var sql = 'INSERT INTO users(user, ws, ms)VALUES(\''+ul[i]+'\', \''+r.url+'\',  '+d.getTime()+')'
-                            //unik.sqlQuery(sql)
                             if(''+ul[i]===tiUserName.text){
                                 //xUserName.visible=false
                             }
@@ -98,6 +114,7 @@ Rectangle {
                     });
                 });
                 xWsUrl.visible=true;
+                r.closingConnection=false;
                 break;
             }
         }
@@ -389,6 +406,12 @@ Rectangle {
         tiWebSocketUrl.text=wsSettings.url
         tiUserName.text=wsSettings.user
 
+    }
+    function swichConnect(){
+        if(!xWsUrl.visible){
+            socket.url=''
+            xWsUrl.visible=true
+        }
     }
     function sendCode(c){
         //console.log("WsSql sending "+r.loginUserName+" "+c)
