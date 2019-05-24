@@ -61,22 +61,6 @@ Item{
         //flash.mode: mode: Camera.FlashRedEyeReduction
 
     }
-
-
-    /*Image{
-      anchors.fill: r
-      anchors.centerIn: r
-      source: '/home/nextsigner/Descargas/gatita.jpg'
-    }*/
-    MouseArea{
-        anchors.fill: r
-        onClicked: {
-            //tcap.running=!tcap.running
-            /*r.grabToImage(function(result) {
-                wsSqlClient.sendCode(unik.itemToImageData(result))
-            });*/
-        }
-    }
     Button{
         text: 'Enviar'
         //onClicked: tSendAudioStream.running=!tSendAudioStream.running

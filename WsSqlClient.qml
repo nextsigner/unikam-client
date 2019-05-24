@@ -33,7 +33,7 @@ Rectangle {
     signal urlSuccess()
     onUrlChanged: {
         socket.url=url
-        xWsUrl.visible=false
+        //xWsUrl.visible=false
     }
     Settings{
         id:wsSettings
@@ -50,7 +50,7 @@ Rectangle {
         }
         property var onmessage
         active: true
-        //url: r.url
+        url: wsSettings.url
         onStatusChanged: {
             switch (socket.status) {
             case WebSocket.Error:
@@ -145,7 +145,7 @@ Rectangle {
         onVisibleChanged: {
             if(visible){
                 //socket.close()
-                tiWebSocketUrl.text=r.url
+                //tiWebSocketUrl.text=wsSettings.url
                 tiWebSocketUrl.focus=true
             }
         }
@@ -165,6 +165,7 @@ Rectangle {
                     font.pixelSize: r.fs
                     color:app.c2
                     anchors.verticalCenter: parent.verticalCenter
+                    text: wsSettings.url
                     cursorDelegate: Rectangle{
                         id:cte2
                         width: app.fs*0.25
@@ -178,7 +179,9 @@ Rectangle {
                             onTriggered: cte2.v=!cte2.v
                         }
                     }
-                    Keys.onReturnPressed:r.url=tiWebSocketUrl.text
+                    Keys.onReturnPressed:{
+                        tiUserName.focus=true
+                    }
                     Rectangle{
                         width: parent.width+r.fs*0.25
                         height: parent.height+r.fs*0.25
@@ -205,6 +208,7 @@ Rectangle {
                     font.pixelSize: r.fs
                     color:app.c2
                     anchors.verticalCenter: parent.verticalCenter
+                    text:wsSettings.user
                     cursorDelegate: Rectangle{
                         id:cte
                         width: app.fs*0.25
@@ -232,10 +236,12 @@ Rectangle {
                 }
             }
             Button{
+                id: botConn
                 text: 'Conectar'
                 font.pixelSize: r.fs
                 anchors.right: parent.right
                 onClicked: {
+                    botConn.enabled=false
                     xWsUrl.visible=false
                     r.url=tiWebSocketUrl.text
                     tLogin.start()
@@ -250,11 +256,14 @@ Rectangle {
                     tiUserName.focus=false
                     r.focus=false
                     loguinSucess()
+                    wsSettings.url=tiWebSocketUrl.text
+                    wsSettings.user=tiUserName.text
                 } else {
                     xWsUrl.visible=true
                     tiWebSocketUrl.color='red'
                     tiUserName.color='red'
                 }
+                botConn.enabled=true
             });
         }
 
@@ -314,7 +323,7 @@ Rectangle {
             anchors.bottomMargin: r.fs*0.5
             onClicked: {
                 errorDialog.visible=false
-                tiWebSocketUrl.text=r.url
+                tiWebSocketUrl.text=wsSettings.url
                 xWsUrl.visible=true
             }
         }
@@ -322,12 +331,14 @@ Rectangle {
     }
 
     Component.onCompleted:{
-        if(wsSettings.url!==''||wsSettings.url===undefined){
+        if(wsSettings.url===''||wsSettings.url===undefined){
             wsSettings.url=r.url
         }
-        if(wsSettings.user!==''||wsSettings.user===undefined){
+        if(wsSettings.user===''||wsSettings.user===undefined){
             wsSettings.user='unikam-client'
         }
+        tiWebSocketUrl.text=wsSettings.url
+        tiUserName.text=wsSettings.user
     }
     function sendCode(c){
         //console.log("WsSql sending "+r.loginUserName+" "+c)
