@@ -1,7 +1,8 @@
 import QtQuick 2.5
 import QtQuick.Controls 2.0
-import QtMultimedia 5.9
-
+import Qt.labs.settings 1.0
+import QtMultimedia 5.5
+import Qt.labs.folderlistmodel 2.1
 Item{
     id:r
     anchors.fill: parent
@@ -10,31 +11,8 @@ Item{
         id:ac
         anchors.centerIn: r
         width: r.width
-        height: r.height
-        Camera {
-            id:  camera
-            imageCapture {
-                onImageCaptured: {
-                    // Show the preview in an Image
-                    //photoPreview.source = preview
-                    //wsSqlClient.sendCode(unik.imageCameraCapturaToByteArray(preview))
-                    //console.log('1--::>'+preview)
-                    //console.log('2--::>'+requestId)
-                    //console.log('3--::>'+capturedImagePath)
-
-                    //console.log('--::>'+unik.imageCameraCapturaToByteArray(preview))
-                    //camera.
-                }
-            }
-            //imageProcessing.whiteBalanceMode: whiteBalanceMode: CameraImageProcessing.WhiteBalanceFlash
-            exposure {
-                //exposureCompensation: - -1.0
-                //exposureMode:  Camera.ExposurePortrait
-            }
-            //flash.mode: mode: Camera.FlashRedEyeReduction
-        }
+        height: r.height/2
         VideoOutput {
-            enabled: r.mode===0
             visible:r.mode===0
             id:videoOutput
             source:  camera
@@ -71,26 +49,47 @@ Item{
             volume: 0
         }
     }
+    Camera {
+        id:  camera
 
+        //imageProcessing.whiteBalanceMode: whiteBalanceMode: CameraImageProcessing.WhiteBalanceFlash
+
+        exposure {
+            exposureCompensation: - -1.0
+            exposureMode:  Camera.ExposurePortrait
+        }
+        //flash.mode: mode: Camera.FlashRedEyeReduction
+
+    }
+
+
+    /*Image{
+      anchors.fill: r
+      anchors.centerIn: r
+      source: '/home/nextsigner/Descargas/gatita.jpg'
+    }*/
+    MouseArea{
+        anchors.fill: r
+        onClicked: {
+            //tcap.running=!tcap.running
+            /*r.grabToImage(function(result) {
+                wsSqlClient.sendCode(unik.itemToImageData(result))
+            });*/
+        }
+    }
     Button{
         text: 'Enviar'
+        //onClicked: tSendAudioStream.running=!tSendAudioStream.running
         onClicked: {
-            //camera.imageCapture.capture();
+            text=text==='Enviar'? 'Enviando' :'Enviar'
             timer.running=!timer.running
-            text=timer.running? 'Enviando' :'Enviar'
         }
         property var timer: tcap
+        anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: r.top
         anchors.topMargin: app.fs*0.1
         anchors.right: r.right
         anchors.rightMargin: app.fs*0.1
-    }
-    Text {
-        id: info
-        text: wsClient.conected?'Connected: '+wsClient.uUrl+' Mode: '+r.mode:'Disonnected: '+wsClient.uUrl
-        font.pixelSize: 10
-        color: 'white'
-        anchors.horizontalCenter: r
     }
     Timer{
         id:tcap
@@ -102,19 +101,16 @@ Item{
         onTriggered: {
             //stop()
             if(r.mode===0){
+                wsSqlClient.sendCode(unik.screenImageData(0))
+            }else{
                 ac.grabToImage(function(result) {
-                    wsClient.sendCode(unik.itemToImageData(result))
-                    start()
-                });
-            }else if(r.mode===1){
-                ac.grabToImage(function(result) {
+
                     //console.log("-->"+unik.itemToImageData(result))
                     screen.source="image://unik/"+v
                     v++
+                    wsSqlClient.sendCode(unik.itemToImageData(result))
                     start()
                 });
-            }else{
-                wsClient.sendCode(unik.screenImageData(0))
             }
         }
     }
@@ -130,16 +126,17 @@ Item{
             v++
             if(v===0){
                 //sendAudioStream()
+
             }
         }
     }
     property int uFileSize: 0
-    /*Connections{
+    Connections{
         target: audioRecorder
         onRecorded:{
             //sender.fileName=audioFile
         }
-    }*/
+    }
     Timer{
         id: sender
         running: fileName!==''

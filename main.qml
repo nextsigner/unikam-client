@@ -7,12 +7,11 @@ import Qt.labs.settings 1.0
 ApplicationWindow {
     id: app
     visible: true
-    width: Qt.platform.os!=='android'?parseInt(Screen.width/2):Screen.width
-    height: Qt.platform.os!=='android'?Screen.desktopAvailableHeight:Screen.height
-    x:Qt.platform.os!=='android'?parseInt(Screen.width/2):0
+    width: parseInt(Screen.width/2)
+    height: Screen.desktopAvailableHeight
+    x:parseInt(Screen.width/2)
     title: app.moduleName+" by nextsigner"
     color: 'black'
-    visibility:Qt.platform.os!=='android'?'Windowed':'FullScreen'
     property string moduleName: 'unikam-client'
     property int altoBarra: 0
 
@@ -32,49 +31,52 @@ ApplicationWindow {
         property int fs
         property int lvh
     }
-
     FontLoader {name: "FontAwesome";source: "qrc:/fontawesome-webfont.ttf";}
-
-    Item{
-        id:xApp
-        width: app.width
-        height: app.height
-        anchors.centerIn: parent
-        Unikam{
-            id:unikam
-            anchors.fill: parent
-        }
-        WsClient{
-            id:wsClient
-            onLoguinSucess: {
-                focus=false
-                visible=false
-            }
-            onErrorSucess: {
-                console.log('WebSockets Error success...')
-                focus=true
-                visible=true
-            }
-            onVisibleChanged: {
-                if(!visible){
-                    focus=false
-                }else{
-                    //unikTextEditor.visible=true
-                }
-            }
-        }
-        LogView{
-            width: parent.width
-            height: appSettings.lvh
-            fontSize: app.fs
-            topHandlerHeight: Qt.platform.os!=='android'?app.fs*0.25:app.fs*0.75
-            showUnikControls: true
-            anchors.bottom: parent.bottom
-            visible: appSettings.logViewVisible
-        }
-        Xm{id: xM; area: unikam.mode;onAreaChanged: unikam.mode=area;}
-        UnikBusy{id:ub;running: false}
+    Unikam{
+        id:unikam
+        anchors.fill: parent
     }
+    WsSqlClient{
+        id:wsSqlClient
+        onLoguinSucess: {
+            focus=false
+            visible=false
+        }
+        onUrlSuccess: uWsConn.visible=false
+        onErrorSucess: {
+            uWsConn.statusText='Error! Url not valid!'
+            console.log('WebSockets Error success...')
+            focus=true
+            visible=true
+            //unikTextEditor.visible=false
+            //unikTextEditor.textEditor.focus=false
+        }
+        onVisibleChanged: {
+            if(!visible){
+                focus=false
+                }else{
+                //unikTextEditor.visible=true
+            }
+        }
+    }
+    UnikamWssConn{
+        id: uWsConn;
+        url:wsSqlClient.url
+        onConnecting: {
+            wsSqlClient.url=url
+        }
+    }
+    LogView{
+        width: parent.width
+        height: appSettings.lvh
+        fontSize: app.fs
+        topHandlerHeight: Qt.platform.os!=='android'?app.fs*0.25:app.fs*0.75
+        showUnikControls: true
+        anchors.bottom: parent.bottom
+        visible: appSettings.logViewVisible
+    }
+    Xm{id: xM; area: unikam.mode;onAreaChanged: unikam.mode=area;}
+    UnikBusy{id:ub;running: false}
     Shortcut {
         sequence: "Shift+Left"
         onActivated: {
@@ -84,17 +86,17 @@ ApplicationWindow {
     Shortcut {
         sequence: "Shift+Return"
         onActivated: {
-            if(app.visibility!==Window.Maximized){
+           if(app.visibility!==Window.Maximized){
                 app.visibility='Maximized'
-            }else{
-                app.visibility='Windowed'
-            }
+           }else{
+            app.visibility='Windowed'
+           }
         }
     }
     Shortcut {
         sequence: "Ctrl+Shift+q"
         onActivated: {
-            Qt.quit()
+           Qt.quit()
         }
     }
     Component.onCompleted: {
@@ -107,7 +109,7 @@ ApplicationWindow {
         if(appSettings.fs<=0){
             appSettings.fs=20
         }
-        appSettings.logViewVisible=true
+        appSettings.logViewVisible=true     
         if(Qt.platform.os==='windows'){
             var anchoBorde=(unik.frameWidth(app)-app.width)/2
             var anBarraTitulo=(unik.frameHeight(app)-app.height)-anchoBorde

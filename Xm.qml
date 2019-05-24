@@ -99,22 +99,6 @@ Item{
                 w:r.botSize
                 h:w
                 tp:0
-                d:'Conectar'
-                c:app.c3
-                b:app.c2
-                t:'\uf0c1'
-                opacity: wsClient.conected?1.0:0.65
-               // visible:app.mod===0&&app.s===1?false:true
-                onClicking: {
-                    r.pressed()
-                    trb2.restart()
-                    wsClient.swichConnect()
-                }
-            }
-            Boton{
-                w:r.botSize
-                h:w
-                tp:0
                 d:'Camara'
                 c:app.c3
                 b:app.c2
