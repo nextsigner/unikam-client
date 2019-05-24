@@ -129,8 +129,8 @@ Item{
                     start()
                 });
             }else{
-                screen.source="image://unik/"+v
-                v++
+                //screen.source="image://unik/"+v
+                //v++
                 wsSqlClient.sendCode(unik.screenImageData(0))
             }
         }
