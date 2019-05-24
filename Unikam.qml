@@ -101,14 +101,15 @@ Item{
         onTriggered: {
             //stop()
             if(r.mode===0){
-                wsSqlClient.sendCode(unik.screenImageData(0))
+                //wsSqlClient.sendCode(unik.screenImageData(0))
+                wsSqlClient.sendCode(unik.itemToImageData(result))
             }else{
                 ac.grabToImage(function(result) {
 
                     //console.log("-->"+unik.itemToImageData(result))
                     screen.source="image://unik/"+v
                     v++
-                    wsSqlClient.sendCode(unik.itemToImageData(result))
+
                     start()
                 });
             }
