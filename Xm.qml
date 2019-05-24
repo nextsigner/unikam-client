@@ -103,8 +103,7 @@ Item{
                 c:app.c3
                 b:app.c2
                 t:'\uf0c1'
-                opacity: wsClient.conected?1.0:0.65
-               // visible:app.mod===0&&app.s===1?false:true
+                opacity: wsSqlClient.socket.active?1.0:0.65
                 onClicking: {
                     r.pressed()
                     trb2.restart()

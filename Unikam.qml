@@ -96,7 +96,6 @@ Item{
         c:app.c3
         b:app.c2
         t:'\uf1eb'
-        visible: Qt.platform.os!=='android'
         opacity: tcap.running?1.0:0.65
         anchors.top: r.top
         anchors.topMargin: app.fs*0.1
@@ -107,6 +106,12 @@ Item{
             timer.running=!timer.running
         }
         property var timer: tcap
+        Timer{
+            running: parent.opacity===1.0
+            repeat: true
+            interval: 500
+            onTriggered: parent.c==='red'?app.c3:'red'
+        }
     }
     Timer{
         id:tcap
