@@ -32,25 +32,25 @@ Rectangle {
     signal keepAliveSuccess()
     signal urlSuccess()
     onUrlChanged: {
-        socket.url=url
-        //xWsUrl.visible=false
+        //socket.url=url
     }
     Settings{
         id:wsSettings
         property string url
         property string user
+        property bool autologin
     }
     WebSocket {
         id: socket
         property var send: function(arg) {
             sendTextMessage(arg);
-        }        
+        }
         onTextMessageReceived: {
             onmessage({data: message});
         }
         property var onmessage
         active: true
-        url: wsSettings.url
+        url: ''
         onStatusChanged: {
             switch (socket.status) {
             case WebSocket.Error:
@@ -66,6 +66,7 @@ Rectangle {
                 //open the webchannel with the socket as transport
                 new WebChannel.QWebChannel(socket, function(ch) {
                     r.channel = ch;
+                    tLogin.start()
                     //connect to the changed signal of the userList property
                     ch.objects.chatserver.userListChanged.connect(function(args) {
                         r.arrayUserList=ch.objects.chatserver.userList
@@ -141,16 +142,21 @@ Rectangle {
         anchors.horizontalCenter: r.horizontalCenter
         anchors.top: r.top
         anchors.topMargin: app.fs
-        visible:false
         onVisibleChanged: {
             if(visible){
-                //socket.close()
-                //tiWebSocketUrl.text=wsSettings.url
+                botConn.enabled=true
                 tiWebSocketUrl.focus=true
             }
         }
         Column{
             spacing: r.fs*0.5
+            width: parent.width
+            Text{
+                text: '<b>WebSockets Setup</b>'
+                font.pixelSize: r.fs*1.2
+                color:app.c2
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
             Row{
                 spacing: r.fs*0.5
                 Text{
@@ -235,45 +241,87 @@ Rectangle {
                     }
                 }
             }
-            Button{
-                id: botConn
-                text: 'Conectar'
-                font.pixelSize: r.fs
-                anchors.right: parent.right
-                onClicked: {
-                    botConn.enabled=false
-                    xWsUrl.visible=false
-                    r.url=tiWebSocketUrl.text
-                    tLogin.start()
+            Row{
+                spacing: app.fs
+                Row{
+                    spacing: app.fs*0.5
+                    Text {
+                        id: labelAutoLogin
+                        text: 'Auto Login'
+                        font.pixelSize: app.fs
+                        color: app.c1
+                    }
+                    CheckBox{
+                        id: cbAutoLogin
+                        text: 'Autologin'
+                        font.pixelSize: app.fs
+                        checked: wsSettings.autologin
+                        onCheckedChanged: {
+                            if(!checked){
+                                wsSettings.autologin=checked
+                            }
+                        }
+                    }
+                }
+                Button{
+                    id: botConn
+                    text: 'Conectar'
+                    font.pixelSize: r.fs
+                    onClicked: {
+                        wsSettings.autologin=cbAutoLogin.checked
+                        ub.running=true
+                        botConn.enabled=false
+                        socket.url=tiWebSocketUrl.text
+                    }
                 }
             }
+            Text {
+                id: labelStatus
+                font.pixelSize: app.fs
+                color: app.c1
+            }
         }
-        function loguin(){
-            r.channel.objects.chatserver.login(tiUserName.text, function(arg) {
-                //check the return value for success
-                if (arg === true) {
-                    r.loginUserName=tiUserName.text
-                    tiUserName.focus=false
-                    r.focus=false
-                    loguinSucess()
-                    wsSettings.url=tiWebSocketUrl.text
-                    wsSettings.user=tiUserName.text
-                } else {
-                    xWsUrl.visible=true
-                    tiWebSocketUrl.color='red'
-                    tiUserName.color='red'
-                }
-                botConn.enabled=true
-            });
+    }
+    Timer{
+        id: tAutoLogin
+        running: wsSettings.autologin
+        repeat: false
+        interval: 2000
+        onTriggered: {
+            socket.url=wsSettings.url
         }
-
     }
     Timer{
         id: tLogin
         running: false
-        repeat: false
+        repeat: true
         interval: 2000
-        onTriggered: xWsUrl.loguin()
+        onTriggered: {
+            if(r.channel){
+                r.channel.objects.chatserver.login(tiUserName.text, function(arg) {
+                    //check the return value for success
+                    if (arg === true) {
+                        r.loginUserName=tiUserName.text
+                        tiUserName.focus=false
+                        r.focus=false
+                        loguinSucess()
+                        wsSettings.url=tiWebSocketUrl.text
+                        wsSettings.user=tiUserName.text
+                    } else {
+                        xWsUrl.visible=true
+                        tiWebSocketUrl.color='red'
+                        tiUserName.color='red'
+                    }
+                    botConn.enabled=true
+                    ub.running=false
+                });
+            }else{
+                xWsUrl.visible=true
+                labelStatus.text='Error! Please Reconnect Again.'
+                //tiWebSocketUrl.color='red'
+                //tiUserName.color='red'
+            }
+        }
     }
 
 
@@ -339,6 +387,7 @@ Rectangle {
         }
         tiWebSocketUrl.text=wsSettings.url
         tiUserName.text=wsSettings.user
+
     }
     function sendCode(c){
         //console.log("WsSql sending "+r.loginUserName+" "+c)

@@ -1,11 +1,13 @@
-# unikastclient
+# unikam-client
 
 Este es un módulo para ejecutar como aplicación anidada dentro de Unik 
-Qml Engine. Sirve para enviar código QML a Unikast Server disponible en 
-la lista de aplicaciones de Unik Qml Engine.
+Qml Engine.
+
+Sirve para enviar código QML a Unikam-Server disponible en
+la lista de aplicaciones de Unik Qml Engine o en https://github.com/nextsigner/unikam-server
 
 
-El servidor Unikast también es un modulo de las mismas características. 
+El servidor Unikam-Server también es un modulo de las mismas características.
 Para instalar tanto este módulo cliente y el servidor hay que realizar 
 los siguientes pasos.
 
@@ -19,4 +21,3 @@ email: nextsigner@gmail.com
 twitter: @nextsigner
 youtube channel: https://youtube.com/c/nextsigner
 whatsapps: +54 11 3802 4370
-# unikam-client
