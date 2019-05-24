@@ -31,20 +31,20 @@ Rectangle {
     signal errorSucess()
     signal keepAliveSuccess()
     signal urlSuccess()
-    /*onUrlChanged: {
+    onUrlChanged: {
         socket.url=url
         xWsUrl.visible=false
-        xUserName.visible=false
-    }*/
+    }
     Settings{
         id:wsSettings
-        property url url
+        property string url
+        property string user
     }
     WebSocket {
         id: socket
         property var send: function(arg) {
             sendTextMessage(arg);
-        }
+        }        
         onTextMessageReceived: {
             onmessage({data: message});
         }
@@ -65,8 +65,6 @@ Rectangle {
             case WebSocket.Open:
                 //open the webchannel with the socket as transport
                 new WebChannel.QWebChannel(socket, function(ch) {
-                    wsSettings.url=r.url
-                    r.urlSuccess()
                     r.channel = ch;
                     //connect to the changed signal of the userList property
                     ch.objects.chatserver.userListChanged.connect(function(args) {
@@ -98,7 +96,7 @@ Rectangle {
                         keepAliveSuccess()
                     });
                 });
-                xUserName.visible=true;
+                xWsUrl.visible=true;
                 break;
             }
         }
@@ -134,94 +132,15 @@ Rectangle {
         }
     }
 
-    Rectangle {
-        id: xUserName
-        width: rowUN.width+app.fs
-        height:r.fs*1.6
-        color:app.c3
-        visible:false
-        anchors.centerIn: parent
-        onVisibleChanged: {
-            if(visible){
-                tiUserName.focus=true
-            }
-        }
-        Column{
-            spacing: r.fs*0.5
-            Row{
-                id:rowUN
-                spacing: r.fs*0.5
-                Text{
-                    text: 'User Name: '
-                    font.pixelSize: r.fs
-                    color:app.c2
-                }
-                TextEdit{
-                    id:tiUserName
-                    width: r.width*0.5
-                    height: r.fs*1.2
-                    font.pixelSize: r.fs
-                    color:app.c2
-                    anchors.verticalCenter: parent.verticalCenter
-                    cursorDelegate: Rectangle{
-                        id:cte
-                        width: app.fs*0.25
-                        height: app.fs
-                        color:v?app.c2:'transparent'
-                        property bool v: true
-                        Timer{
-                            running: xUserName.visible
-                            repeat: true
-                            interval: 650
-                            onTriggered: cte.v=!cte.v
-                        }
-                    }
-                    Keys.onReturnPressed: {
-                        xUserName.loguin()
-                    }
-                    Rectangle{
-                        width: parent.width+r.fs*0.25
-                        height: parent.height+r.fs*0.25
-                        color: 'transparent'
-                        anchors.centerIn: parent
-                        border.width: 1
-                        border.color: app.c2
-                    }
-                }
-            }
-            Button{
-                text: 'Conectar'
-                font.pixelSize: r.fs
-                anchors.right: parent.right
-                onClicked: {
-                    xUserName.loguin()
-                }
-            }
-        }
-        function loguin(){
-            r.channel.objects.chatserver.login(tiUserName.text, function(arg) {
-                //check the return value for success
-                if (arg === true) {
-                    r.loginUserName=tiUserName.text
-                    xUserName.visible=false
-                    tiUserName.focus=false
-                    r.focus=false
-                    loguinSucess()
-                } else {
-                    tiUserName.color='red'
-                }
-            });
-        }
-
-    }
-
 
     Rectangle {
         id: xWsUrl
         width: r.width*0.8
         height: r.width*0.02
         color:app.c3
-        anchors.centerIn: parent
+        anchors.horizontalCenter: r.horizontalCenter
+        anchors.top: r.top
+        anchors.topMargin: app.fs
         visible:false
         onVisibleChanged: {
             if(visible){
@@ -271,6 +190,47 @@ Rectangle {
                 }
 
             }
+            Row{
+                id:rowUN
+                spacing: r.fs*0.5
+                Text{
+                    text: 'User Name: '
+                    font.pixelSize: r.fs
+                    color:app.c2
+                }
+                TextEdit{
+                    id:tiUserName
+                    width: r.width*0.5
+                    height: r.fs*1.2
+                    font.pixelSize: r.fs
+                    color:app.c2
+                    anchors.verticalCenter: parent.verticalCenter
+                    cursorDelegate: Rectangle{
+                        id:cte
+                        width: app.fs*0.25
+                        height: app.fs
+                        color:v?app.c2:'transparent'
+                        property bool v: true
+                        Timer{
+                            running: xWsUrl.visible
+                            repeat: true
+                            interval: 650
+                            onTriggered: cte.v=!cte.v
+                        }
+                    }
+                    Keys.onReturnPressed: {
+                        xWsUrl.loguin()
+                    }
+                    Rectangle{
+                        width: parent.width+r.fs*0.25
+                        height: parent.height+r.fs*0.25
+                        color: 'transparent'
+                        anchors.centerIn: parent
+                        border.width: 1
+                        border.color: app.c2
+                    }
+                }
+            }
             Button{
                 text: 'Conectar'
                 font.pixelSize: r.fs
@@ -278,9 +238,33 @@ Rectangle {
                 onClicked: {
                     xWsUrl.visible=false
                     r.url=tiWebSocketUrl.text
+                    tLogin.start()
                 }
             }
         }
+        function loguin(){
+            r.channel.objects.chatserver.login(tiUserName.text, function(arg) {
+                //check the return value for success
+                if (arg === true) {
+                    r.loginUserName=tiUserName.text
+                    tiUserName.focus=false
+                    r.focus=false
+                    loguinSucess()
+                } else {
+                    xWsUrl.visible=true
+                    tiWebSocketUrl.color='red'
+                    tiUserName.color='red'
+                }
+            });
+        }
+
+    }
+    Timer{
+        id: tLogin
+        running: false
+        repeat: false
+        interval: 2000
+        onTriggered: xWsUrl.loguin()
     }
 
 
@@ -291,7 +275,9 @@ Rectangle {
         color: app.c3
         border.width: 1
         border.color: app.c2
-        anchors.centerIn: r
+        anchors.horizontalCenter: r.horizontalCenter
+        anchors.top: r.top
+        anchors.topMargin: app.fs
         visible:false
         property alias text: msg.text
         onVisibleChanged: {
@@ -328,9 +314,7 @@ Rectangle {
             anchors.bottomMargin: r.fs*0.5
             onClicked: {
                 errorDialog.visible=false
-                xUserName.visible=false
                 tiWebSocketUrl.text=r.url
-                r.url=''
                 xWsUrl.visible=true
             }
         }
@@ -341,24 +325,9 @@ Rectangle {
         if(wsSettings.url!==''||wsSettings.url===undefined){
             wsSettings.url=r.url
         }
-        /*unik.sqliteInit(sqliteFileName)
-        var sql=''
-        sql= 'CREATE TABLE IF NOT EXISTS users(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user TEXT,
-            ws TEXT,
-            ms NUMERIC
-            )'
-        unik.sqlQuery(sql)
-
-        sql= 'CREATE TABLE IF NOT EXISTS qmlcodes(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            code TEXT,
-            user TEXT,
-            ws TEXT,
-            ms NUMERIC
-            )'
-        unik.sqlQuery(sql)*/
+        if(wsSettings.user!==''||wsSettings.user===undefined){
+            wsSettings.user='unikam-client'
+        }
     }
     function sendCode(c){
         //console.log("WsSql sending "+r.loginUserName+" "+c)

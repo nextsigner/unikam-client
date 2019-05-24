@@ -42,9 +42,9 @@ ApplicationWindow {
             focus=false
             visible=false
         }
-        onUrlSuccess: uWsConn.visible=false
+        //onUrlSuccess: uWsConn.visible=false
         onErrorSucess: {
-            uWsConn.statusText='Error! Url not valid!'
+            //uWsConn.statusText='Error! Url not valid!'
             console.log('WebSockets Error success...')
             focus=true
             visible=true
@@ -59,13 +59,13 @@ ApplicationWindow {
             }
         }
     }
-    UnikamWssConn{
-        id: uWsConn;
-        url:wsSqlClient.url
-        onConnecting: {
-            wsSqlClient.url=url
-        }
-    }
+//    UnikamWssConn{
+//        id: uWsConn;
+//        url:wsSqlClient.url
+//        onConnecting: {
+//            wsSqlClient.url=url
+//        }
+//    }
     LogView{
         width: parent.width
         height: appSettings.lvh

@@ -62,6 +62,7 @@ Rectangle {
             anchors.right: parent.right
             onClicked: {
                 r.connecting(tiUrl.text)
+                r.visible=false
             }
         }
     }
