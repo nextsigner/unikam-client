@@ -1,0 +1,11 @@
+[General]
+autologin=false
+url=ws://190.178.156.53:12345
+user=dfgfd
+
+[conf-unikam-client]
+cantRun=0
+fs=20
+fullScreen=false
+logViewVisible=true
+lvh=5

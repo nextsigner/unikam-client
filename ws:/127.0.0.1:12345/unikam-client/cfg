@@ -1,0 +1,11 @@
+[General]
+autologin=false
+url=ws://127.0.0.1:12345
+user=sdsf
+
+[conf-unikam-client]
+cantRun=0
+fs=20
+fullScreen=false
+logViewVisible=true
+lvh=359

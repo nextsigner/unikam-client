@@ -1,0 +1,10 @@
+{
+	"themes":{
+		"colorThemes":[
+            ["red", "yellow", "orange", "white"],
+            ["pink", "red", "black", "orange"],
+            ["blue", "yellow", "orange", "black"],
+            ["orange", "black", "blue", "yellow"]
+		]
+	}
+}

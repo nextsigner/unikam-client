@@ -1,0 +1,11 @@
+[General]
+autologin=false
+url=ws://unik.donweb-remoteip.net:12345
+user=gd
+
+[conf-unikam-client]
+cantRun=0
+fs=20
+fullScreen=false
+logViewVisible=true
+lvh=100

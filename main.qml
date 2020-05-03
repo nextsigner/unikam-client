@@ -31,6 +31,7 @@ ApplicationWindow {
 
     Settings{
         id: appSettings
+        fileName: pws+'/'+app.moduleName+'/cfg'
         category: 'conf-'+app.moduleName
         property int cantRun
         property bool fullScreen
@@ -66,6 +67,12 @@ ApplicationWindow {
                 //unikTextEditor.visible=true
             }
         }
+    }
+    Text {
+        id: showMode
+        text: 'Mode: '+unikam.mode
+        font.pixelSize: 30
+        color: 'red'
     }
     LogView{
         width: parent.width

@@ -39,6 +39,7 @@ Rectangle {
     }
     Settings{
         id:wsSettings
+        fileName: pws+'/'+app.moduleName+'/cfg'
         property string url
         property string user
         property bool autologin
@@ -397,6 +398,24 @@ Rectangle {
     }
 
     Component.onCompleted:{
+        var d = new Date(Date.now())
+        tiUserName.text=Qt.platform.os+'-'+d.getTime()
+        if(Qt.application.arguments.toString().indexOf('-ws=')>=0){
+            console.log('Ws from command line: '+Qt.application.arguments.toString())
+            for(var i=0;i<Qt.application.arguments.length;i++){
+                console.log('i: '+Qt.application.arguments[i])
+                if((''+Qt.application.arguments[i]).indexOf('-ws=')>=0){
+                    let m0=Qt.application.arguments[i].split('-ws=')
+                    if(m0.length>0){
+                        console.log('i2: '+m0[1])
+                        tiWebSocketUrl.text=m0[1]
+                    }
+                    break
+                }
+            }
+            tiUserName.text=wsSettings.user
+            return
+        }
         if(wsSettings.url===''||wsSettings.url===undefined){
             wsSettings.url=r.url
         }

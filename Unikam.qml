@@ -121,8 +121,14 @@ Item{
         //interval: 1000
         property int v: 0
         onTriggered: {
-            //stop()
-            if(r.mode===0){
+            stop()
+//            ac.grabToImage(function(result) {
+//                //console.log("-->"+unik.itemToImageData(result))
+//                wsSqlClient.sendCode(unik.itemToImageData(result))
+//                start()
+//            });
+
+            if(r.mode===2){
                 ac.grabToImage(function(result) {
                     //console.log("-->"+unik.itemToImageData(result))
                     wsSqlClient.sendCode(unik.itemToImageData(result))

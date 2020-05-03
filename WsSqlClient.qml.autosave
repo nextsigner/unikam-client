@@ -9,15 +9,15 @@ Rectangle {
     id: r
     anchors.fill: parent
     color:app?app.c3:'gray'
-    property string wsModuleName: 'wscli'
     property int fs: app && app.fs ? app.fs:r.width*0.03
     property var channel
     property var listView
-    property bool conected: false
+    property bool active: socket.active
+    property alias socket: socket
+    property bool closingConnection: false
 
     //Default
-    property url url: "ws://127.0.0.1:12345"
-    property url uUrl: wscliSettings.uUrl
+    property url url: Qt.platform.os!=='android'?"ws://127.0.0.1:12345":"ws://127.0.0.1:5500"
 
     //Envia a Android Samsung J7
     //property url url: "ws://192.168.1.64:5500"
@@ -26,22 +26,23 @@ Rectangle {
     //Envia a Linux
     //property url url: "ws://192.168.1.61:12345"
 
+
     property var arrayUserList: []
+    property string sqliteFileName: 'wssqlclient.sqlite'
     property string loginUserName
     signal loguinSucess()
     signal errorSucess()
     signal keepAliveSuccess()
-
+    signal urlSuccess()
+    onUrlChanged: {
+        //socket.url=url
+    }
     Settings{
-        id: wscliSettings
-        category: 'conf-'+r.wsModuleName+app.moduleName
-        property string uUrl
-        property bool autoLogin
-        onUUrlChanged: {
-            socket.url=uUrl
-            xWsUrl.visible=false
-            xUserName.visible=false
-        }
+        id:wsSettings
+        fileName: pws+'/'+app.moduleName+'/cfg2'
+        property string url
+        property string user
+        property bool autologin
     }
     WebSocket {
         id: socket
@@ -53,24 +54,39 @@ Rectangle {
         }
         property var onmessage
         active: true
-        url: r.url
+        url: ''
         onStatusChanged: {
             switch (socket.status) {
             case WebSocket.Error:
-                errorSucess()
-                errorDialog.text = "Error: " + socket.errorString;
-                errorDialog.visible = true;
+                if(!r.closingConnection){
+                    errorSucess()
+                    errorDialog.text = "Error: " + socket.errorString;
+                    errorDialog.visible = true;
+                }else{
+                    errorDialog.visible=false
+                    tiWebSocketUrl.text=wsSettings.url
+                    xWsUrl.visible=true
+                    r.visible=true
+                }
+                //r.closingConnection=false;
                 break;
             case WebSocket.Closed:
-                r.conected=false
-                errorDialog.text = "Error: Socket at " + url + " closed.";
-                errorDialog.visible = true;
+                if(!r.closingConnection){
+                    errorDialog.text = "Error: Socket at " + url + " closed.";
+                    errorDialog.visible = true;
+                }else{
+                    errorDialog.visible=false
+                    tiWebSocketUrl.text=wsSettings.url
+                    xWsUrl.visible=true
+                    r.visible=true
+                }
+                //r.closingConnection=false;
                 break;
             case WebSocket.Open:
-                r.conected=true
                 //open the webchannel with the socket as transport
                 new WebChannel.QWebChannel(socket, function(ch) {
                     r.channel = ch;
+                    tLogin.start()
                     //connect to the changed signal of the userList property
                     ch.objects.chatserver.userListChanged.connect(function(args) {
                         r.arrayUserList=ch.objects.chatserver.userList
@@ -86,7 +102,10 @@ Rectangle {
                     ch.objects.chatserver.newMessage.connect(function(time, user, message) {
                         var d = new Date(Date.now())
                         //console.log('Unik WsSql: Addign QmlCode: '+message)
+                        //var sql = 'INSERT INTO users(user, ws, ms)VALUES(\''+message+'\', \''+user+'\', \''+r.url+'\',  '+d.getTime()+')'
+                        //unik.sqlQuery(sql)
                     });
+
                     //connect to the keep alive signal
                     ch.objects.chatserver.keepAlive.connect(function(args) {
                         if (r.loginUserName !== '')
@@ -95,7 +114,8 @@ Rectangle {
                         keepAliveSuccess()
                     });
                 });
-                xUserName.visible=true;
+                xWsUrl.visible=true;
+                r.closingConnection=false;
                 break;
             }
         }
@@ -110,12 +130,12 @@ Rectangle {
             }
         }
         function updateUserList(){
-            console.log('Unik WsClient: Updating User List...')
+            console.log('Unik WsSql: Updating User List...')
             clear()
             var ul = arrayUserList;
             for(var i=0; i < ul.length; i++){
                 append(createElement(ul[i]))
-                console.log('Unik WsClient: Addign User: '+ul[i])
+                console.log('Unik WsSql: Addign User: '+ul[i])
             }
         }
     }
@@ -131,33 +151,72 @@ Rectangle {
         }
     }
 
+
     Rectangle {
-        id: xUserName
-        width: rowUN.width+app.fs
-        height:r.fs*1.6
+        id: xWsUrl
+        width: r.width*0.8
+        height: r.width*0.02
         color:app.c3
-        visible:false
-        //anchors.centerIn: parent
-        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.horizontalCenter: r.horizontalCenter
+        anchors.top: r.top
+        anchors.topMargin: app.fs
         onVisibleChanged: {
             if(visible){
-                tiUserName.focus=true
-                if(wscliSettings.autoLogin){
-                    tAutoLogin.start()
-                }
+                botConn.enabled=true
+                tiWebSocketUrl.focus=true
             }
-        }
-        Timer{
-            id: tAutoLogin
-            running: false
-            repeat: true
-            interval: 3000
-            onTriggered: xUserName.loguin()
         }
         Column{
             spacing: r.fs*0.5
-            anchors.top: parent.top
-            anchors.topMargin: app.fs*0.5
+            width: parent.width
+            Text{
+                text: '<b>WebSockets Setup</b>'
+                font.pixelSize: r.fs*1.2
+                color:app.c2
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+            Row{
+                spacing: r.fs*0.5
+                Text{
+                    text: 'WebSockets Url: '
+                    font.pixelSize: r.fs
+                    color:app.c2
+                }
+                TextInput{
+                    id:tiWebSocketUrl
+                    width: r.width*0.5
+                    height: r.fs*1.2
+                    font.pixelSize: r.fs
+                    color:app.c2
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: wsSettings.url
+                    cursorDelegate: Rectangle{
+                        id:cte2
+                        width: app.fs*0.25
+                        height: app.fs
+                        color:v?app.c2:'transparent'
+                        property bool v: true
+                        Timer{
+                            running: xWsUrl.visible
+                            repeat: true
+                            interval: 650
+                            onTriggered: cte2.v=!cte2.v
+                        }
+                    }
+                    Keys.onReturnPressed:{
+                        tiUserName.focus=true
+                    }
+                    Rectangle{
+                        width: parent.width+r.fs*0.25
+                        height: parent.height+r.fs*0.25
+                        color: 'transparent'
+                        anchors.centerIn: parent
+                        border.width: 1
+                        border.color: app.c2
+                    }
+                }
+
+            }
             Row{
                 id:rowUN
                 spacing: r.fs*0.5
@@ -173,99 +232,9 @@ Rectangle {
                     font.pixelSize: r.fs
                     color:app.c2
                     anchors.verticalCenter: parent.verticalCenter
+                    text:wsSettings.user
                     cursorDelegate: Rectangle{
                         id:cte
-                        width: app.fs*0.25
-                        height: app.fs
-                        color:v?app.c2:'transparent'
-                        property bool v: true
-                        Timer{
-                            running: xUserName.visible
-                            repeat: true
-                            interval: 650
-                            onTriggered: cte.v=!cte.v
-                        }
-                    }
-                    Keys.onReturnPressed: {
-                        xUserName.loguin()
-                    }
-                    Rectangle{
-                        width: parent.width+r.fs*0.25
-                        height: parent.height+r.fs*0.25
-                        color: 'transparent'
-                        anchors.centerIn: parent
-                        border.width: 1
-                        border.color: app.c2
-                    }
-                }
-            }
-            Row{
-                CheckBox{
-                    text: 'AutoLogin'
-                    checked: wscliSettings.autoLogin
-                    onCheckedChanged: {
-                        wscliSettings.autoLogin=checked
-                    }
-                }
-            Button{
-                text: 'Conectar'
-                font.pixelSize: r.fs
-                onClicked: {
-                    xUserName.loguin()
-                }
-            }
-            }
-        }
-        function loguin(){
-            r.channel.objects.chatserver.login(tiUserName.text, function(arg) {
-                //check the return value for success
-                if (arg === true) {
-                    r.loginUserName=tiUserName.text
-                    xUserName.visible=false
-                    tiUserName.focus=false
-                    r.focus=false
-                    loguinSucess()
-                } else {
-                    tiUserName.color='red'
-                }
-            });
-        }
-
-    }
-
-
-    Rectangle {
-        id: xWsUrl
-        width: r.width*0.8
-        height: r.width*0.02
-        color:app.c3
-        anchors.centerIn: parent
-        visible:false
-        onVisibleChanged: {
-            if(visible){
-                //socket.close()
-                tiWebSocketUrl.text=wscliSettings.uUrl
-                tiWebSocketUrl.focus=true
-            }
-        }
-        Column{
-            spacing: r.fs*0.5
-            Row{
-                spacing: r.fs*0.5
-                Text{
-                    text: 'WebSockets Url: '
-                    font.pixelSize: r.fs
-                    color:app.c2
-                }
-                TextInput{
-                    id:tiWebSocketUrl
-                    width: r.width*0.5
-                    height: r.fs*1.2
-                    font.pixelSize: r.fs
-                    color:app.c2
-                    anchors.verticalCenter: parent.verticalCenter
-                    cursorDelegate: Rectangle{
-                        id:cte2
                         width: app.fs*0.25
                         height: app.fs
                         color:v?app.c2:'transparent'
@@ -274,10 +243,12 @@ Rectangle {
                             running: xWsUrl.visible
                             repeat: true
                             interval: 650
-                            onTriggered: cte2.v=!cte2.v
+                            onTriggered: cte.v=!cte.v
                         }
                     }
-                    Keys.onReturnPressed:r.url=tiWebSocketUrl.text
+                    Keys.onReturnPressed: {
+                        xWsUrl.loguin()
+                    }
                     Rectangle{
                         width: parent.width+r.fs*0.25
                         height: parent.height+r.fs*0.25
@@ -287,16 +258,86 @@ Rectangle {
                         border.color: app.c2
                     }
                 }
-
             }
-            Button{
-                text: 'Conectar 2'
-                font.pixelSize: r.fs
-                anchors.right: parent.right
-                onClicked: {
-                    xWsUrl.visible=false
-                    wscliSettings.uUrl=tiWebSocketUrl.text
+            Row{
+                spacing: app.fs
+                Row{
+                    spacing: app.fs*0.5
+                    Text {
+                        id: labelAutoLogin
+                        text: 'Auto Login'
+                        font.pixelSize: app.fs
+                        color: app.c1
+                    }
+                    CheckBox{
+                        id: cbAutoLogin
+                        text: 'Autologin'
+                        font.pixelSize: app.fs
+                        checked: wsSettings.autologin
+                        onCheckedChanged: {
+                            if(!checked){
+                                wsSettings.autologin=checked
+                            }
+                        }
+                    }
                 }
+                Button{
+                    id: botConn
+                    text: 'Conectar'
+                    font.pixelSize: r.fs
+                    onClicked: {
+                        wsSettings.autologin=cbAutoLogin.checked
+                        ub.running=true
+                        botConn.enabled=false
+                        socket.url=tiWebSocketUrl.text
+                    }
+                }
+            }
+            Text {
+                id: labelStatus
+                font.pixelSize: app.fs
+                color: app.c1
+            }
+        }
+    }
+    Timer{
+        id: tAutoLogin
+        running: wsSettings.autologin
+        repeat: false
+        interval: 2000
+        onTriggered: {
+            socket.url=wsSettings.url
+        }
+    }
+    Timer{
+        id: tLogin
+        running: false
+        repeat: true
+        interval: 2000
+        onTriggered: {
+            if(r.channel){
+                r.channel.objects.chatserver.login(tiUserName.text, function(arg) {
+                    //check the return value for success
+                    if (arg === true) {
+                        r.loginUserName=tiUserName.text
+                        tiUserName.focus=false
+                        r.focus=false
+                        loguinSucess()
+                        wsSettings.url=tiWebSocketUrl.text
+                        wsSettings.user=tiUserName.text
+                    } else {
+                        xWsUrl.visible=true
+                        tiWebSocketUrl.color='red'
+                        tiUserName.color='red'
+                    }
+                    botConn.enabled=true
+                    ub.running=false
+                });
+            }else{
+                xWsUrl.visible=true
+                labelStatus.text='Error! Please Reconnect Again.'
+                //tiWebSocketUrl.color='red'
+                //tiUserName.color='red'
             }
         }
     }
@@ -309,13 +350,16 @@ Rectangle {
         color: app.c3
         border.width: 1
         border.color: app.c2
-        anchors.centerIn: r
+        anchors.horizontalCenter: r.horizontalCenter
+        anchors.top: r.top
+        anchors.topMargin: app.fs
         visible:false
         property alias text: msg.text
         onVisibleChanged: {
             if(visible){
                 errorSucess()
             }
+            botConn.enabled=true
         }
         Text {
             text: '<b>WebSocket Error</b>'
@@ -346,40 +390,48 @@ Rectangle {
             anchors.bottomMargin: r.fs*0.5
             onClicked: {
                 errorDialog.visible=false
-                xUserName.visible=false
-                tiWebSocketUrl.text=wscliSettings.uUrl
-                r.url=''
+                tiWebSocketUrl.text=wsSettings.url
                 xWsUrl.visible=true
             }
         }
+
     }
-    Component.onCompleted: {
-        unik.debugLog=true
-        console.log('0Ws from command line: '+Qt.application.arguments.toString())
+
+    Component.onCompleted:{
         var d = new Date(Date.now())
         tiUserName.text=Qt.platform.os+'-'+d.getTime()
         if(Qt.application.arguments.toString().indexOf('-ws=')>=0){
             console.log('Ws from command line: '+Qt.application.arguments.toString())
             for(var i=0;i<Qt.application.arguments.length;i++){
-                if(Qt.application.arguments[i].indexOf('-ws=')>=0){
+                console.log('i: '+Qt.application.arguments[i])
+                if((''+Qt.application.arguments[i]).indexOf('-ws=')>=0){
                     let m0=Qt.application.arguments[i].split('-ws=')
                     if(m0.length>0){
-                        r.url=m0[1]
+                        console.log('i2: '+m0[1])
+                        tiWebSocketUrl.text=m0[1]
                     }
                     break
                 }
             }
+            tiUserName.text=wsSettings.user
             return
         }
-        if(wscliSettings.uUrl===''){
-            wscliSettings.uUrl=r.url
+        if(wsSettings.url===''||wsSettings.url===undefined){
+            wsSettings.url=r.url
         }
-        if(wscliSettings.autoLogin===undefined){
-            wscliSettings.autoLogin=true
+        if(wsSettings.user===''||wsSettings.user===undefined){
+            wsSettings.user='unikam-client'
         }
+        tiWebSocketUrl.text=wsSettings.url
+        tiUserName.text=wsSettings.user
 
     }
-
+    function swichConnect(){
+        if(!xWsUrl.visible){
+            socket.url=''
+            xWsUrl.visible=true
+        }
+    }
     function sendCode(c){
         //console.log("WsSql sending "+r.loginUserName+" "+c)
 
@@ -392,12 +444,5 @@ Rectangle {
     function sendAudioStream(d){
         //r.channel.objects.chatserver.sendMessage(r.loginUserName, "audio"+d+"");
         r.channel.objects.chatserver.sendMessage(r.loginUserName, d);
-    }
-    function swichConnect(){
-        if(r.conected){
-            socket.active=false
-        }else{
-            socket.active=true
-        }
     }
 }
